@@ -6,6 +6,7 @@ cd "$SDK"
 rm -rf package/auto-pci-cell
 mkdir -p package/auto-pci-cell
 cp -r /src/Makefile /src/files package/auto-pci-cell/
+[ -f .config ] || make defconfig >/dev/null
 sed -i '/CONFIG_PACKAGE_auto-pci-cell[= ]/d' .config
 echo 'CONFIG_PACKAGE_auto-pci-cell=m' >> .config
 make defconfig >/dev/null

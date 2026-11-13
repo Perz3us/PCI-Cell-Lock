@@ -25,28 +25,15 @@ var callTest = rpc.declare({
     expect: {}
 });
 
-var callRevertStaging = rpc.declare({
-    object: 'auto-pci-cell',
-    method: 'revert_staging',
-    expect: {}
-});
-
 var callFxsStatus = rpc.declare({
     object: 'fxs',
     method: 'status',
     expect: {}
 });
 
-var callGetClear = rpc.declare({
-    object: 'apc-ui',
-    method: 'get_clear',
-    expect: {}
-});
-
-var callSetClear = rpc.declare({
-    object: 'apc-ui',
-    method: 'set_clear',
-    params: [ 'ts', 'cnt' ],
+var callClearHistory = rpc.declare({
+    object: 'auto-pci-cell',
+    method: 'clear_history',
     expect: {}
 });
 
@@ -112,7 +99,6 @@ var CSS = [
     '.apc-swapped {',
     '  animation: apc-swap-flash 0.48s ease-out !important;',
     '}',
-    /* Clean Header -> Title + Pills, Tight Subtitle, Animated Updated Time Below */
     '.apc-head-wrap {',
     '  margin: 4px 0 14px 0;',
     '  padding: 0;',
@@ -179,7 +165,6 @@ var CSS = [
     '.apc-time-text.apc-time-tick {',
     '  animation: apc-time-tick 0.32s ease-out;',
     '}',
-    /* Solid Status Pills */
     '.apc-pill {',
     '  display: inline-block;',
     '  padding: 0.22em 0.75em;',
@@ -194,7 +179,6 @@ var CSS = [
     '.apc-pill.warn { background: var(--apc-warn); }',
     '.apc-pill.bad { background: var(--apc-bad); }',
     '.apc-pill.info { background: var(--apc-info); }',
-    /* Vertical Stack of 4 Status Cards */
     '.apc-grid {',
     '  display: grid;',
     '  grid-template-columns: 1fr;',
@@ -231,7 +215,6 @@ var CSS = [
     '  opacity: 0.8;',
     '  font-variant-numeric: tabular-nums;',
     '}',
-    /* 3rd Card: Switching + Live RJ11 Phone Animation Sync */
     '.apc-card-switch {',
     '  display: flex;',
     '  align-items: center;',
@@ -310,7 +293,6 @@ var CSS = [
     '  opacity: 0;',
     '  transition: opacity 0.18s ease;',
     '}',
-    /* Off-hook states (Dial tone, Dialing, Calling, In call) */
     '.apc-rj11-widget.st-dialtone .apc-rj11-handset,',
     '.apc-rj11-widget.st-dialing .apc-rj11-handset,',
     '.apc-rj11-widget.st-calling .apc-rj11-handset,',
@@ -330,13 +312,11 @@ var CSS = [
     '.apc-rj11-widget.st-connected .apc-rj11-plunger {',
     '  transform: translateY(-2.5px);',
     '}',
-    /* Dialing keypad sequence animation */
     '.apc-rj11-widget.st-dialing .apc-rj11-key.k1 { animation: apc-rj11-key-blink 1.2s infinite 0.0s; }',
     '.apc-rj11-widget.st-dialing .apc-rj11-key.k5 { animation: apc-rj11-key-blink 1.2s infinite 0.25s; }',
     '.apc-rj11-widget.st-dialing .apc-rj11-key.k9 { animation: apc-rj11-key-blink 1.2s infinite 0.5s; }',
     '.apc-rj11-widget.st-dialing .apc-rj11-key.k3 { animation: apc-rj11-key-blink 1.2s infinite 0.75s; }',
     '.apc-rj11-widget.st-dialing .apc-rj11-key.k7 { animation: apc-rj11-key-blink 1.2s infinite 1.0s; }',
-    /* Ringing state: phone rocks + dual golden sound waves pulse */
     '.apc-rj11-widget.st-ringing .apc-rj11-phone {',
     '  animation: apc-rj11-rock 0.55s infinite ease-in-out;',
     '}',
@@ -346,7 +326,6 @@ var CSS = [
     '.apc-rj11-widget.st-ringing .apc-rj11-wave.w-outer {',
     '  animation: apc-rj11-wave-out 0.9s infinite ease-in-out;',
     '}',
-    /* Status Pill & Caller Number under RJ11 Phone */
     '.apc-rj11-pill {',
     '  margin-top: 4px;',
     '  display: inline-flex;',
@@ -392,7 +371,6 @@ var CSS = [
     '  text-overflow: ellipsis;',
     '  white-space: nowrap;',
     '}',
-    /* Cells & Recent Switches Tables */
     '.apc-title {',
     '  font-size: 1.06em;',
     '  font-weight: 700;',
@@ -502,7 +480,6 @@ var CSS = [
     '  opacity: 0.85;',
     '  font-weight: 700;',
     '}',
-    /* Smooth Button Animations */
     '.apc-btn, .apc-wrapper .cbi-button, .cbi-page-actions .cbi-button {',
     '  display: inline-flex !important;',
     '  align-items: center;',
@@ -533,7 +510,6 @@ var CSS = [
     '  display: inline-block;',
     '  flex-shrink: 0;',
     '}',
-    /* Form Sections */
     '#apc-form-holder { width: 100% !important; margin: 0 !important; padding: 0 !important; }',
     '#apc-form-holder .cbi-map { margin: 0 !important; padding: 0 !important; width: 100% !important; }',
     '#apc-form-holder .cbi-map-descr { display: none !important; }',
@@ -628,7 +604,6 @@ var CSS = [
     '  max-width: 100% !important;',
     '  box-sizing: border-box !important;',
     '}',
-    /* Checkboxes pinned top-right */
     '#apc-form-holder .cbi-value[data-name="enabled"] > .cbi-value-title,',
     '#apc-form-holder .cbi-value[data-name="probe"] > .cbi-value-title,',
     '#apc-form-holder .cbi-value[data-name="probe_schedule"] > .cbi-value-title,',
@@ -656,7 +631,6 @@ var CSS = [
     '  right: 13px !important;',
     '  margin: 0 !important;',
     '}',
-    /* Highlight Master Switch */
     '#apc-form-holder [data-tab="general"] > .cbi-value[data-name="enabled"] {',
     '  background: linear-gradient(90deg, rgba(22,163,74,0.14) 0%, rgba(22,163,74,0.03) 100%) !important;',
     '  border: 1px solid rgba(22,163,74,0.4) !important;',
@@ -699,7 +673,6 @@ var CSS = [
     '  color: #ff7b72;',
     '  border: 1px solid rgba(220,38,38,0.4);',
     '}',
-    /* Main Priority List Cards */
     '#apc-form-holder .cbi-section-table {',
     '  width: 100% !important;',
     '  display: block !important;',
@@ -806,7 +779,6 @@ var CSS = [
     '}',
     '.apc-move-btn:active { transform: scale(0.85) !important; background: rgba(88,166,255,0.32) !important; }',
     '.apc-move-btn:disabled { opacity: 0.25 !important; pointer-events: none !important; }',
-    /* Custom Interactive Scheduled Cells Priority List Widget */
     '.apc-sched-list {',
     '  width: 100%;',
     '  box-sizing: border-box;',
@@ -1105,7 +1077,6 @@ function createRj11PhoneElement() {
     return wrap;
 }
 
-/* Custom Interactive Priority List Option for Scheduled Cells (Up/Down/Add/Delete) */
 var CBIScheduledCells = form.Value.extend({
     renderWidget: function(section_id, option_index, cfgvalue) {
         var initialArr = [];
@@ -1338,100 +1309,17 @@ return view.extend({
         btn.appendChild(E('span', {}, text));
     },
 
-    _clearedHistTs: 0,
-    _clearedHistCnt: 0,
-
-    _readCookieClear: function() {
-        try {
-            var m = /(?:^|;\s*)apc_cleared_hist=([0-9]+)_([0-9]+)/.exec(document.cookie || '');
-            if (m) return { ts: +m[1] || 0, cnt: +m[2] || 0 };
-        } catch (e) {}
-        return { ts: 0, cnt: 0 };
-    },
-
-    _writeCookieClear: function(ts, cnt) {
-        try {
-            if (ts > 0) {
-                document.cookie = 'apc_cleared_hist=' + ts + '_' + cnt + '; path=/; max-age=604800; SameSite=Lax';
-            } else {
-                document.cookie = 'apc_cleared_hist=0_0; path=/; max-age=0; SameSite=Lax';
-            }
-        } catch (e) {}
-    },
-
-    _readClearState: function() {
-        var ts = this._clearedHistTs || 0;
-        var cnt = this._clearedHistCnt || 0;
-        var ck = this._readCookieClear();
-        if (ck.ts > ts) { ts = ck.ts; cnt = ck.cnt; }
-        try {
-            var lTs = +(window.localStorage.getItem('apc_cleared_hist_ts') || 0);
-            var lCnt = +(window.localStorage.getItem('apc_cleared_hist_cnt') || 0);
-            if (lTs > ts) { ts = lTs; cnt = lCnt; }
-        } catch (e) {}
-        return { ts: ts, cnt: cnt };
-    },
-
-    _writeClearState: function(ts, cnt, syncServer) {
-        this._clearedHistTs = ts || 0;
-        this._clearedHistCnt = cnt || 0;
-        this._writeCookieClear(this._clearedHistTs, this._clearedHistCnt);
-        try {
-            if (ts > 0) {
-                window.localStorage.setItem('apc_cleared_hist_ts', String(ts));
-                window.localStorage.setItem('apc_cleared_hist_cnt', String(cnt));
-            } else {
-                window.localStorage.removeItem('apc_cleared_hist_ts');
-                window.localStorage.removeItem('apc_cleared_hist_cnt');
-            }
-        } catch (e) {}
-        if (syncServer) {
-            L.resolveDefault(callSetClear(this._clearedHistTs, this._clearedHistCnt), {});
-        }
-    },
-
-    /* Filter Recent Switches with manual Clear support (persists across logout/login, auto-resets on router restart) */
-    getVisibleHistory: function(rawHist) {
-        if (!Array.isArray(rawHist) || rawHist.length === 0) {
-            if (this._clearedHistTs > 0) this._writeClearState(0, 0, true);
-            return [];
-        }
-        var st = this._readClearState();
-        if (!st.ts) return rawHist;
-
-        var maxTs = 0;
-        for (var i = 0; i < rawHist.length; i++) {
-            var t = +(rawHist[i].time || 0);
-            if (t > maxTs) maxTs = t;
-        }
-        /* Detect router restart where history reset */
-        if (rawHist.length < st.cnt && maxTs < st.ts) {
-            this._writeClearState(0, 0, true);
-            return rawHist;
-        }
-        return rawHist.filter(function(h) {
-            return (+(h.time || 0)) > st.ts;
-        });
-    },
-
     clearRecentSwitches: function() {
-        var rawHist = (this.lastStatus && Array.isArray(this.lastStatus.history))
-            ? this.lastStatus.history
-            : [];
-        if (!rawHist.length) return;
-        var maxTs = 0;
-        rawHist.forEach(function(h) {
-            var t = +(h.time || 0);
-            if (t > maxTs) maxTs = t;
+        var self = this;
+        return callClearHistory().then(function() {
+            return L.resolveDefault(callStatus(), {});
+        }).then(function(st) {
+            if (self.dashboardBox && st) self.updateDashboardPreservingScroll(self.dashboardBox, st);
+        }).catch(function(e) {
+            ui.addNotification(null, E('p', {}, _('Could not clear the list: ') + e.message));
         });
-        if (!maxTs) maxTs = Math.floor(Date.now() / 1000);
-        this._writeClearState(maxTs, rawHist.length, true);
-        if (this.dashboardBox && this.lastStatus) {
-            this.updateDashboardPreservingScroll(this.dashboardBox, this.lastStatus);
-        }
     },
 
-    /* Resolve RJ11 (fxs) state 100% synced with Phone (RJ11) page (never confuses lifting hook with In Call) */
     resolvePhoneVisual: function(s, fxs) {
         s = s || {};
         fxs = fxs || {};
@@ -1453,7 +1341,6 @@ return view.extend({
         var isLiveFxsActive = false;
 
         if (hasFxs) {
-            /* Driven strictly by live RJ11 fxsd state for zero-latency, 1:1 visual sync */
             if (testring || rawState === 'ringing' || rawState === 'ring' || rawState === 'incoming') {
                 stClass = 'st-ringing';
                 cardClass = 'is-ringing';
@@ -1490,7 +1377,6 @@ return view.extend({
                 showPeer = peer;
                 isLiveFxsActive = true;
             } else if (offhook || rawState === 'dialtone' || rawState === 'dial_tone' || rawState === 'dial-tone' || rawState === 'dial tone' || rawState === 'offhook' || rawState === 'off_hook' || rawState === 'off-hook' || rawState === 'tone') {
-                /* Whenever handset is lifted without an active/dialed call -> always Dial tone with NO peer number */
                 stClass = 'st-dialtone';
                 cardClass = 'is-call-active';
                 isOffhook = true;
@@ -1502,7 +1388,6 @@ return view.extend({
                 pillLabel = _('Idle (on hook)');
             }
         } else {
-            /* Fallback only if fxs ubus is not present */
             if (apcPhone.indexOf('ring') !== -1) {
                 stClass = 'st-ringing';
                 cardClass = 'is-ringing';
@@ -1596,12 +1481,12 @@ return view.extend({
         return vis;
     },
 
-    /* Fast (< 1s) lightweight RJ11 status sync from /var/run/fxsd.state (0 AT commands, 0% extra daemon CPU) */
     startLivePhoneTicker: function() {
         var self = this;
         if (window._apcFxsTimer) {
             window.clearInterval(window._apcFxsTimer);
         }
+        if (!self.hasFxs) return;
         var pollFxs = function() {
             if (document.hidden || self._fxsInFlight) return;
             if (!document.getElementById('apc-switching-card')) return;
@@ -1617,7 +1502,7 @@ return view.extend({
             });
         };
         pollFxs();
-        window._apcFxsTimer = window.setInterval(pollFxs, 350);
+        window._apcFxsTimer = window.setInterval(pollFxs, 1500);
     },
 
     updateDashboardPreservingScroll: function(box, st) {
@@ -1677,7 +1562,6 @@ return view.extend({
         }
     },
 
-    /* 1-Second Synchronized Live Clock + Green Dot Pulse */
     triggerSynchronizedClockTick: function() {
         var clkEl = document.getElementById('apc-live-clock-text');
         var dotEl = document.getElementById('apc-live-clock-dot');
@@ -1705,7 +1589,7 @@ return view.extend({
             }
         };
         checkTick();
-        window._apcClockTimer = window.setInterval(checkTick, 200);
+        window._apcClockTimer = window.setInterval(checkTick, 500);
     },
 
     renderDashboard: function(s) {
@@ -1732,7 +1616,7 @@ return view.extend({
             : '';
 
         var portSub = (s.port_mode == 'manual' ? _('Manual') : _('Auto')) +
-                      ', at-daemon ' + (s.atd ? _('running') : _('not running'));
+                      (s.port == 'mm' ? ', ModemManager' : ', at-daemon ' + (s.atd ? _('running') : _('not running')));
 
         var vis = this.applyPhoneVisualToDOM();
 
@@ -1758,7 +1642,7 @@ return view.extend({
             ]);
         });
 
-        var visibleHist = this.getVisibleHistory(s.history || []);
+        var visibleHist = s.history || [];
         var histRows = visibleHist.slice().reverse().map(function(h) {
             var switchCell = E('div', { 'class': 'apc-switch-flow' }, [
                 E('span', { 'class': 'apc-switch-node' }, h.from || 'open'),
@@ -1793,7 +1677,7 @@ return view.extend({
         return E('div', {}, [
             E('div', { 'class': 'apc-head-wrap' }, [
                 E('div', { 'class': 'apc-head' }, [
-                    E('div', { 'class': 'apc-head-title' }, _('Smart PCI Handler')),
+                    E('div', { 'class': 'apc-head-title' }, _('Auto Pci Cell')),
                     pill(on ? _('ON') : _('OFF'), on ? 'ok' : ''),
                     pill(st[0], st[1])
                 ]),
@@ -1808,7 +1692,7 @@ return view.extend({
             E('p', {
                 'class': 'apc-warn',
                 'style': s.state == 'other_lock' ? '' : 'display:none'
-            }, _('The firmware has its own PCI lock turned on. Smart PCI Handler changes nothing until that lock is turned off.')),
+            }, _('The firmware has its own PCI lock turned on. Auto Pci Cell changes nothing until that lock is turned off.')),
 
             E('div', { 'class': 'apc-grid' }, [
                 card(_('Current cell (PCI / EARFCN)'), cell, cellSub),
@@ -1956,27 +1840,20 @@ return view.extend({
 
     load: function() {
         var self = this;
-        uci.unload('auto-pci-cell');
-        return L.resolveDefault(callRevertStaging(), {}).then(function() {
-            self.clearUnsavedBanner();
-            return Promise.all([
-                L.resolveDefault(callStatus(), {}),
-                L.resolveDefault(callPorts(), []),
-                uci.load('auto-pci-cell'),
-                L.resolveDefault(callFxsStatus(), {}),
-                L.resolveDefault(callGetClear(), {})
-            ]);
-        });
+        self.clearUnsavedBanner();
+        return Promise.all([
+            L.resolveDefault(callStatus(), {}),
+            L.resolveDefault(callPorts(), []),
+            uci.load('auto-pci-cell'),
+            L.resolveDefault(callFxsStatus(), null)
+        ]);
     },
 
     render: function(data) {
         var self = this;
         self.lastStatus = data[0] || {};
         self.lastFxs = data[3] || {};
-        var srvClear = data[4] || {};
-        if (+(srvClear.ts || 0) > 0) {
-            self._writeClearState(+(srvClear.ts || 0), +(srvClear.cnt || 0), false);
-        }
+        self.hasFxs = !!data[3];
         var box = E('div', {});
         self.dashboardBox = box;
         box.appendChild(self.renderDashboard(self.lastStatus));
@@ -1990,7 +1867,7 @@ return view.extend({
         s.tab('general', _('General'));
         s.tab('timing', _('Timing & Probing'));
 
-        o = s.taboption('general', form.Flag, 'enabled', _('Enable Smart PCI Handler'),
+        o = s.taboption('general', form.Flag, 'enabled', _('Enable Auto Pci Cell'),
             _('Master switch: Automatically lock and maintain the best 4G cell from your priority list.'));
         o.rmempty = false;
 
@@ -2006,7 +1883,7 @@ return view.extend({
         o.value('manual', _('Manual Port Selection'));
 
         o = s.taboption('general', form.ListValue, 'manual_at_port', _('Manual AT Port'));
-        ports.forEach(function(p) { o.value(p); });
+        ports.forEach(function(p) { o.value(p, p == 'mm' ? 'ModemManager' : p); });
         if (!ports.length)
             o.value('/dev/ttyUSB2');
         o.depends('at_port_mode', 'manual');
@@ -2200,7 +2077,6 @@ return view.extend({
         o.rmempty = false;
         o.validate = hhmm;
 
-        /* Custom CBIScheduledCells Widget with Guaranteed Up/Down/Add/Delete */
         o = s.option(CBIScheduledCells, 'cell', _('Scheduled Cells (PCI,EARFCN)'),
             _('Enter each cell as PCI,EARFCN (e.g. 175,400) and press + to add. Use Up/Down arrows to reorder priority (Max 5).'));
 
@@ -2214,8 +2090,7 @@ return view.extend({
 
         var signatureFooter = E('div', { 'class': 'apc-signature-footer' }, [
             E('div', { 'class': 'apc-sig-top' }, [
-                E('span', { 'style': 'font-weight:700;opacity:0.94;' }, 'Smart PCI Handler'),
-                E('span', { 'class': 'apc-ver-pill' }, 'V2.2')
+                E('span', { 'style': 'font-weight:700;opacity:0.94;' }, 'Auto Pci Cell')
             ]),
             E('div', { 'class': 'apc-sig-credits' }, [
                 E('span', {}, [
@@ -2256,10 +2131,8 @@ return view.extend({
 
     handleReset: function(ev) {
         var self = this;
-        return L.resolveDefault(callRevertStaging(), {}).then(function() {
-            uci.unload('auto-pci-cell');
-            return uci.load('auto-pci-cell');
-        }).then(function() {
+        uci.unload('auto-pci-cell');
+        return uci.load('auto-pci-cell').then(function() {
             self.clearUnsavedBanner();
             return self.rerenderFormMap();
         });

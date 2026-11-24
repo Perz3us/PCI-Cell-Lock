@@ -94,7 +94,7 @@ function phoneBadge(phone) {
 	]);
 }
 
-var PORT_NAMES = { mm: 'ModemManager', '5gmodem': _('5G Modem app') };
+var PORT_NAMES = { mm: 'ModemManager', '5gmodem': _('5G Modem app'), qmodem: 'QModem' };
 
 var STATES = {
 	starting: [ _('Starting'), '' ],
@@ -185,7 +185,7 @@ function renderCards(s) {
 			]),
 			phoneBadge(s.phone)
 		]),
-		card(_('AT port'), PORT_NAMES[s.port] || s.port || '-', (s.port_mode == 'manual' ? _('Manual') : _('Auto')) + (PORT_NAMES[s.port] ? '' : ', at-daemon ' + (s.atd ? _('running') : _('not running'))))
+		card(_('AT port'), PORT_NAMES[s.port] || s.port || '-', (s.port_mode == 'manual' ? _('Manual') : _('Auto')) + (PORT_NAMES[s.port] ? '' : (s.atd ? ', at-daemon' : (s.smstool ? ', sms_tool' : ', ' + _('at-daemon not running')))))
 	]);
 }
 

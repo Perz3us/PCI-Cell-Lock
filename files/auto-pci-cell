@@ -217,10 +217,20 @@ at() {
 		AT_OUT=$(printf '%s\nOK\n' "$AT_OUT")
 		return 0
 	fi
+	if [ "$PORT" = qmodem ]; then
+		AT_OUT=$(qm_at "$1" "${2:-5}") || return 1
+		at_tidy
+		return
+	fi
 	if [ "$PORT" = mm ]; then
 		AT_OUT=$(mmcli -m any --timeout=$((${2:-5} + 3)) --command="$1" 2>/dev/null) || return 1
 		AT_OUT=$(printf '%s\nOK\n' "${AT_OUT#response: }" | tr -d "\r\"\\\\' ")
 		return 0
+	fi
+	if ! ubus list at-daemon >/dev/null 2>&1; then
+		AT_OUT=$(tty_at "$PORT" "$1" "${2:-5}") || return 1
+		at_tidy
+		return
 	fi
 	esc=$(printf '%s' "$1" | sed 's/"/\\"/g')
 	AT_OUT=$(ubus -t $((${2:-5} + 3)) call at-daemon sendat \
@@ -228,6 +238,56 @@ at() {
 	AT_OUT=$(printf '%s\n' "$AT_OUT" | sed -n 's/^[[:space:]]*"response": "\(.*\)",\{0,1\}$/\1/p' |
 		sed 's/\\r//g; s/\\n/\n/g' | tr -d '"\\ ')
 	[ -n "$AT_OUT" ]
+}
+
+# Drops the echo and quotes from a reply and makes sure it ends in OK or
+# ERROR, the way the at-daemon replies are read.
+at_tidy() {
+	AT_OUT=$(printf '%s\n' "$AT_OUT" | grep -v '^AT' | tr -d "\r\"\\\\' " | grep .)
+	case "$NL$AT_OUT$NL" in
+	*"${NL}OK$NL"*|*ERROR*) ;;
+	*) AT_OUT=$(printf '%s\nOK\n' "$AT_OUT") ;;
+	esac
+	[ -n "$AT_OUT" ]
+}
+
+# Straight to the serial port with sms_tool, the way modemdata and the SMS
+# app do, on firmware where at-daemon isn't there to share the port.
+tty_at() {
+	command -v sms_tool >/dev/null || return 1
+	if command -v timeout >/dev/null; then
+		timeout $(($3 + 3)) sms_tool -d "$1" at "$2" 2>/dev/null
+	else
+		sms_tool -d "$1" at "$2" 2>/dev/null
+	fi
+}
+
+# QModem's own AT tool, under the same per-port lock QModem uses, so the
+# two never talk to the modem at once. Used on firmware with QModem and no
+# at-daemon.
+qm_port() {
+	uci -q show qmodem | sed -n "s/^qmodem\.[^.]*\.at_port='\(.*\)'$/\1/p" | head -n 1
+}
+
+qm_tool() {
+	command -v tom_modem >/dev/null || command -v sms_tool_q >/dev/null
+}
+
+qm_at() {
+	local p k t=$2
+
+	p=$(qm_port)
+	case "$p" in /dev/*[!A-Za-z0-9_/.-]*|'') return 1 ;; esac
+	k=$(printf '%s' "$p" | tr -c 'A-Za-z0-9_' '_')
+	mkdir -p /var/lock
+	(
+		flock -x 9 || exit 1
+		if [ "$(uci -q get qmodem.main.at_tool)" = 1 ] || ! command -v tom_modem >/dev/null; then
+			sms_tool_q -d "$p" at "$1"
+		else
+			tom_modem -d "$p" -o a -c "$1" -t "$t"
+		fi
+	) 9>"/var/lock/qmodem-at-$k.lock" 2>/dev/null
 }
 
 g5_port() {
@@ -263,6 +323,7 @@ auto_ports() {
 
 	[ -x "$G5_AT" ] && [ -n "$(g5_port)" ] && echo 5gmodem
 	pidof ModemManager >/dev/null && command -v mmcli >/dev/null && echo mm
+	qm_tool && [ -n "$(qm_port)" ] && echo qmodem
 	uci -q show qmodem | sed -n "s/^qmodem\.[^.]*\.at_port='\(.*\)'$/\1/p"
 	for t in /sys/class/tty/ttyUSB*; do
 		[ -e "$t/device" ] || continue
@@ -280,7 +341,7 @@ find_port() {
 	if [ "$PORT_MODE" = manual ]; then
 		case "$MANUAL_PORT" in
 		/dev/*[!A-Za-z0-9_/.-]*|'') ;;
-		/dev/*|mm|5gmodem) port_ok "$MANUAL_PORT" ;;
+		/dev/*|mm|5gmodem|qmodem) port_ok "$MANUAL_PORT" ;;
 		esac
 	else
 		for p in $(auto_ports); do
